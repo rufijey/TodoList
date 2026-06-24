@@ -1,0 +1,283 @@
+.todolistView {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.todolistHeader {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 70%;
+}
+
+.displayTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.displayTitle h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.editTitleForm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.editTitleForm input {
+  padding: 6px 12px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.2);
+  border-color: var(--primary);
+  width: 100%;
+}
+
+.sharedBadgeLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.sharedBadgeLabel .highlight {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.readOnlyNotice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.progressCard {
+  padding: 20px 24px;
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.progressNumbers {
+  color: white;
+}
+
+.progressBarContainer {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, #818cf8 100%);
+  border-radius: 4px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+}
+
+.addTodoForm {
+  padding: 14px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.addTodoForm textarea {
+  flex-grow: 1;
+  min-width: 0;
+  resize: vertical;
+  min-height: 48px;
+  height: 48px;
+  line-height: 1.4;
+}
+
+.kanbanBoard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.kanbanColumn {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-glass);
+  min-height: 450px;
+  padding: 16px;
+  transition: var(--transition-smooth);
+}
+
+.kanbanColumn:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.columnHeader h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.columnTasks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+  min-height: 380px;
+}
+
+.kanbanTaskCard {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.kanbanTaskCard:not(.readOnly) {
+  cursor: grab;
+}
+
+.kanbanTaskCard:not(.readOnly):active {
+  cursor: grabbing;
+}
+
+.kanbanTaskCard:not(.readOnly):hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.kanbanTaskCard.completed {
+  opacity: 0.65;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.kanbanTaskCard.completed .todoTitle {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.todoItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  cursor: pointer;
+}
+
+.todoItem.completed {
+  opacity: 0.65;
+}
+
+.todoItem.completed .todoTitle {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.todoItem.readOnly {
+  cursor: default;
+}
+
+.todoItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 85%;
+}
+
+.todoTitle {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+@media (max-width: 992px) {
+  .kanbanBoard {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .kanbanColumn {
+    min-height: auto;
+  }
+
+  .columnTasks {
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 900px) {
+  .todolistHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .titleSection {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .displayTitle h2 {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .actionSection {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .todolistHeader {
+    padding: 16px;
+  }
+
+  .todoItem {
+    padding: 12px 14px;
+  }
+}

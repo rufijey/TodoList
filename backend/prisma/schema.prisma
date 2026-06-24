@@ -1,0 +1,64 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                String       @id @default(uuid())
+  email             String       @unique
+  password          String
+  refreshToken      String?
+  isVerified        Boolean      @default(false)
+  verificationToken String?      @unique
+  todoLists         TodoList[]
+  createdAt         DateTime     @default(now())
+}
+
+model TodoList {
+  id         String       @id @default(uuid())
+  name       String
+  slug       String?      @unique
+  ownerId    String
+  owner      User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  todos      Todo[]
+  sharedWith SharedList[]
+  createdAt  DateTime     @default(now())
+
+  @@index([ownerId])
+}
+
+enum Permission {
+  READ
+  WRITE
+}
+
+model SharedList {
+  id              String     @id @default(uuid())
+  listId          String
+  list            TodoList   @relation(fields: [listId], references: [id], onDelete: Cascade)
+  sharedWithEmail String
+  permission      Permission @default(READ)
+  createdAt       DateTime   @default(now())
+
+  @@unique([listId, sharedWithEmail])
+}
+
+enum TodoStatus {
+  TO_DO
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Todo {
+  id        String     @id @default(uuid())
+  title     String
+  status    TodoStatus @default(TO_DO)
+  listId    String
+  list      TodoList   @relation(fields: [listId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+
+  @@index([listId])
+}

@@ -1,0 +1,67 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: todolist-postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: todolist
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - todolist_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: todolist-backend
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: sh -c "npx prisma migrate deploy && npm run start:dev"
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: "postgresql://postgres:mysecretpassword@postgres:5432/todolist?schema=public"
+      FRONTEND_URL: "http://localhost"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - todolist_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: builder
+      args:
+        VITE_API_URL: "http://localhost:3000"
+    container_name: todolist-frontend
+    ports:
+      - '80:80'
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0 --port 80
+    depends_on:
+      - backend
+    networks:
+      - todolist_network
+
+volumes:
+  postgres_data:
+
+networks:
+  todolist_network:
+    driver: bridge

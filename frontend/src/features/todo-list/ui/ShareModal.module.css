@@ -1,0 +1,214 @@
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+}
+
+.modalCard {
+  width: 100%;
+  max-width: 500px;
+  overflow: hidden;
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  background: #18181b;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.modalHeader h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.modalSubtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.modalBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.shareForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.permissionSelector {
+  display: flex;
+  gap: 12px;
+}
+
+.permissionBtn {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-glass);
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-muted);
+  transition: var(--transition-smooth);
+}
+
+.permissionBtn svg {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.permissionBtn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.permissionBtn.active {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btnTextWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.btnTitle {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.btnDesc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.sharesSection {
+  border-top: 1px solid var(--border-glass);
+  padding-top: 20px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+.emptySharesState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  gap: 8px;
+  border: 1px dashed var(--border-glass);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.emptyIcon {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.emptySharesState p {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.sharesList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.sharesList::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sharesList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.shareItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+}
+
+.shareItemInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.userIcon {
+  color: var(--text-secondary);
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shareEmail {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.shareRole {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}

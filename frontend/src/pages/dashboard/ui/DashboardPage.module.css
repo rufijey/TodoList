@@ -1,0 +1,153 @@
+.dashboardLayout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.dashboardContent {
+  flex-grow: 1;
+  padding: 40px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboardContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashboardContent::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+.mobileToggleBtn {
+  display: none;
+}
+
+.mobileBackBtn {
+  display: none;
+}
+
+.dashboardWelcomeView {
+  margin: auto;
+  max-width: 640px;
+  text-align: center;
+  padding: 60px 40px;
+  border: 1px solid var(--border-glass);
+}
+
+.welcomeLogo {
+  margin-bottom: 24px;
+  filter: drop-shadow(0 0 12px var(--primary-glow));
+}
+
+.dashboardWelcomeView h2 {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.dashboardWelcomeView p {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+}
+
+.welcomeStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.statVal {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.statLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@media (max-width: 900px) {
+  .dashboardLayout {
+    position: relative;
+  }
+
+  .dashboardContent {
+    padding: 30px 20px;
+    width: 100%;
+  }
+
+  .mobileToggleBtn {
+    display: flex;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 99;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+    border-radius: 50%;
+    padding: 14px;
+    background: var(--primary);
+    color: white;
+  }
+
+  .mobileToggleBtn:hover {
+    background: var(--primary-hover);
+  }
+
+  .sidebarOpen .mobileToggleBtn {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+
+  .sidebarClosed .mobileBackBtn {
+    display: inline-flex;
+  }
+
+  .sidebarOpen .dashboardContent {
+    filter: blur(2px);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .welcomeStats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mobileOverlay {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobileOverlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 9;
+    animation: fadeIn 0.25s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
