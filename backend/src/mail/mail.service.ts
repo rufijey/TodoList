@@ -66,6 +66,15 @@ export class MailService {
     }
   }
 
+  private getFrontendUrl(): string {
+    const rawUrl = this.config.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+    try {
+      return new URL(rawUrl).origin;
+    } catch {
+      return rawUrl;
+    }
+  }
+
   async sendShareNotification(
     toEmail: string,
     listName: string,
@@ -73,7 +82,7 @@ export class MailService {
     permission: 'READ' | 'WRITE',
     listSlug?: string,
   ) {
-    const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+    const frontendUrl = this.getFrontendUrl();
     const shareUrl = listSlug ? `${frontendUrl}/lists/${listSlug}` : frontendUrl;
 
     const { subject, text, html } = getShareNotificationTemplate(
@@ -87,7 +96,7 @@ export class MailService {
   }
 
   async sendVerificationEmail(toEmail: string, token: string) {
-    const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+    const frontendUrl = this.getFrontendUrl();
     const verificationUrl = `${frontendUrl}/verify-email?token=${token}`;
 
     const { subject, text, html } = getVerificationEmailTemplate(verificationUrl);
