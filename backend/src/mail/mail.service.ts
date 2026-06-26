@@ -1,8 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
 import { getShareNotificationTemplate, getVerificationEmailTemplate } from './mail.templates';
-import * as dns from 'dns';
+import { Resend } from 'resend';
 
 const cleanLog = (str: string): string => {
   return str
@@ -14,51 +13,54 @@ const cleanLog = (str: string): string => {
 
 @Injectable()
 export class MailService {
-  private transporter: nodemailer.Transporter | null | undefined = undefined;
+  private resend: Resend | null = null;
   private readonly logger = new Logger(MailService.name);
 
-  constructor(private config: ConfigService) {}
-
-  private async getTransporter(): Promise<nodemailer.Transporter | null> {
-    if (this.transporter !== undefined) {
-      return this.transporter;
-    }
-
-    const host = this.config.get<string>('SMTP_HOST');
-    const port = this.config.get<number>('SMTP_PORT') || 587;
-    const user = this.config.get<string>('SMTP_USER');
-    const pass = this.config.get<string>('SMTP_PASS');
-
-    if (user && pass) {
-      const options: any = {
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
-      };
-
-      if (host) {
-        try {
-          const { address } = await dns.promises.lookup(host, { family: 4 });
-          options.host = address;
-          options.tls = {
-            servername: host,
-          };
-        } catch (err: any) {
-          this.logger.warn(`Failed to pre-resolve SMTP host ${host}: ${err.message}`);
-        }
-      }
-
-      this.transporter = nodemailer.createTransport(options);
-      this.logger.log('Nodemailer SMTP transporter initialized');
+  constructor(private config: ConfigService) {
+    const apiKey = this.config.get<string>('RESEND_API_KEY');
+    if (apiKey) {
+      this.resend = new Resend(apiKey);
+      this.logger.log('Resend client initialized');
     } else {
-      this.transporter = null;
-      this.logger.warn(
-        'SMTP credentials not provided. Email service will output emails to console.',
+      this.logger.warn('RESEND_API_KEY not provided. Email service will output emails to console.');
+    }
+  }
+
+  private async sendEmail(to: string, subject: string, text: string, html: string) {
+    const from = this.config.get<string>('RESEND_FROM') || this.config.get<string>('SMTP_FROM') || 'onboarding@resend.dev';
+
+    if (this.resend) {
+      try {
+        const { data, error } = await this.resend.emails.send({
+          from,
+          to,
+          subject,
+          text,
+          html,
+        });
+
+        if (error) {
+          throw new Error(error.message || JSON.stringify(error));
+        }
+
+        this.logger.log(`Email successfully sent via Resend to ${to} (ID: ${data?.id})`);
+      } catch (error: any) {
+        this.logger.error(`Failed to send email via Resend to ${to}:`, error.message);
+      }
+    } else {
+      this.logger.log(
+        cleanLog(`
+          [EMAIL OUT]
+          ========================================
+          TO: ${to}
+          FROM: ${from}
+          SUBJECT: ${subject}
+          BODY:
+          ${text}
+          ========================================
+        `),
       );
     }
-
-    return this.transporter;
   }
 
   async sendShareNotification(
@@ -69,7 +71,6 @@ export class MailService {
     listSlug?: string,
   ) {
     const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'http://localhost:5173';
-    const from = this.config.get<string>('SMTP_FROM') || 'noreply@todolist.com';
     const shareUrl = listSlug ? `${frontendUrl}/lists/${listSlug}` : frontendUrl;
 
     const { subject, text, html } = getShareNotificationTemplate(
@@ -79,72 +80,15 @@ export class MailService {
       shareUrl,
     );
 
-    const transporter = await this.getTransporter();
-
-    if (transporter) {
-      try {
-        await transporter.sendMail({
-          from,
-          to: toEmail,
-          subject,
-          text,
-          html,
-        });
-        this.logger.log(`Email notification successfully sent to ${toEmail}`);
-      } catch (error) {
-        this.logger.error(`Failed to send email to ${toEmail}:`, error);
-      }
-    } else {
-      this.logger.log(
-        cleanLog(`
-          [EMAIL OUT]
-          ========================================
-          TO: ${toEmail}
-          FROM: ${from}
-          SUBJECT: ${subject}
-          BODY:
-          ${text}
-          ========================================
-        `),
-      );
-    }
+    await this.sendEmail(toEmail, subject, text, html);
   }
 
   async sendVerificationEmail(toEmail: string, token: string) {
     const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'http://localhost:5173';
-    const from = this.config.get<string>('SMTP_FROM') || 'noreply@todolist.com';
     const verificationUrl = `${frontendUrl}/verify-email?token=${token}`;
 
     const { subject, text, html } = getVerificationEmailTemplate(verificationUrl);
 
-    const transporter = await this.getTransporter();
-
-    if (transporter) {
-      try {
-        await transporter.sendMail({
-          from,
-          to: toEmail,
-          subject,
-          text,
-          html,
-        });
-        this.logger.log(`Verification email successfully sent to ${toEmail}`);
-      } catch (error) {
-        this.logger.error(`Failed to send verification email to ${toEmail}:`, error);
-      }
-    } else {
-      this.logger.log(
-        cleanLog(`
-          [EMAIL OUT]
-          ========================================
-          TO: ${toEmail}
-          FROM: ${from}
-          SUBJECT: ${subject}
-          BODY:
-          ${text}
-          ========================================
-        `),
-      );
-    }
+    await this.sendEmail(toEmail, subject, text, html);
   }
 }
