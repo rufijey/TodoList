@@ -6,8 +6,18 @@ import { DomainExceptionFilter } from './shared/filters/domain-exception.filter'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
+  const frontendUrl = process.env.FRONTEND_URL;
+  let corsOrigin: string = 'http://localhost:5173';
+  if (frontendUrl) {
+    try {
+      corsOrigin = new URL(frontendUrl).origin;
+    } catch {
+      corsOrigin = frontendUrl;
+    }
+  }
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: corsOrigin,
     credentials: true,
   });
 
