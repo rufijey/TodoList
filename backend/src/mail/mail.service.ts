@@ -34,13 +34,6 @@ export class MailService {
         auth: { user, pass },
       };
 
-      if (host && host.includes('gmail.com')) {
-        options.service = 'gmail';
-        delete options.host;
-        delete options.port;
-        delete options.secure;
-      }
-
       this.transporter = nodemailer.createTransport(options);
       this.logger.log('Nodemailer SMTP transporter initialized');
     } else {
