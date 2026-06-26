@@ -17,19 +17,23 @@ interface AuthState {
   initialize: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  loading: true,
-  error: null,
-  setError: (err) => set({ error: err }),
-  initialize: () => {
+const getInitialUser = (): User | null => {
+  try {
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('accessToken');
     if (storedUser && token) {
-      set({ user: JSON.parse(storedUser) });
+      return JSON.parse(storedUser);
     }
-    set({ loading: false });
+  } catch (error) {}
+  return null;
+};
 
+export const useAuthStore = create<AuthState>((set) => ({
+  user: getInitialUser(),
+  loading: false,
+  error: null,
+  setError: (err) => set({ error: err }),
+  initialize: () => {
     const handleLogoutEvent = () => {
       set({ user: null });
       localStorage.removeItem('user');
