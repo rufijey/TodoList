@@ -23,7 +23,7 @@ export class MailService {
 
   private async sendEmail(to: string, subject: string, text: string, html: string) {
     const apiKey = this.config.get<string>('SENDGRID_API_KEY');
-    const rawFrom = this.config.get<string>('SENDGRID_FROM') || this.config.get<string>('SMTP_FROM') || 'tikhonov.alexander.work@gmail.com';
+    const rawFrom = this.config.get<string>('SENDGRID_FROM') || 'tikhonov.alexander.work@gmail.com';
     const fromEmail = extractEmail(rawFrom);
 
     this.logger.log(
