@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { getShareNotificationTemplate, getVerificationEmailTemplate } from './mail.templates';
+import * as dns from 'dns';
 
 const cleanLog = (str: string): string => {
   return str
@@ -13,14 +14,16 @@ const cleanLog = (str: string): string => {
 
 @Injectable()
 export class MailService {
-  private transporter!: nodemailer.Transporter | null;
+  private transporter: nodemailer.Transporter | null | undefined = undefined;
   private readonly logger = new Logger(MailService.name);
 
-  constructor(private config: ConfigService) {
-    this.initTransporter();
-  }
+  constructor(private config: ConfigService) {}
 
-  private async initTransporter() {
+  private async getTransporter(): Promise<nodemailer.Transporter | null> {
+    if (this.transporter !== undefined) {
+      return this.transporter;
+    }
+
     const host = this.config.get<string>('SMTP_HOST');
     const port = this.config.get<number>('SMTP_PORT') || 587;
     const user = this.config.get<string>('SMTP_USER');
@@ -34,6 +37,18 @@ export class MailService {
         auth: { user, pass },
       };
 
+      if (host) {
+        try {
+          const { address } = await dns.promises.lookup(host, { family: 4 });
+          options.host = address;
+          options.tls = {
+            servername: host,
+          };
+        } catch (err: any) {
+          this.logger.warn(`Failed to pre-resolve SMTP host ${host}: ${err.message}`);
+        }
+      }
+
       this.transporter = nodemailer.createTransport(options);
       this.logger.log('Nodemailer SMTP transporter initialized');
     } else {
@@ -42,6 +57,8 @@ export class MailService {
         'SMTP credentials not provided. Email service will output emails to console.',
       );
     }
+
+    return this.transporter;
   }
 
   async sendShareNotification(
@@ -62,9 +79,11 @@ export class MailService {
       shareUrl,
     );
 
-    if (this.transporter) {
+    const transporter = await this.getTransporter();
+
+    if (transporter) {
       try {
-        await this.transporter.sendMail({
+        await transporter.sendMail({
           from,
           to: toEmail,
           subject,
@@ -98,9 +117,11 @@ export class MailService {
 
     const { subject, text, html } = getVerificationEmailTemplate(verificationUrl);
 
-    if (this.transporter) {
+    const transporter = await this.getTransporter();
+
+    if (transporter) {
       try {
-        await this.transporter.sendMail({
+        await transporter.sendMail({
           from,
           to: toEmail,
           subject,
