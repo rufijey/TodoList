@@ -65,6 +65,9 @@ export const RegisterForm: React.FC = () => {
           </div>
           <div className="alert alert-success glass-alert mb-6">
             <span>A verification link has been sent to <strong>{email}</strong>. Please check your inbox and click the link to activate your account.</span>
+            <p style={{ marginTop: '10px', fontSize: '13px', opacity: 0.9, margin: '10px 0 0 0' }}>
+              If you don't receive the email, please check your <strong>Spam</strong> or <strong>Junk</strong> folder.
+            </p>
           </div>
           <Link
             to={ROUTES.LOGIN}

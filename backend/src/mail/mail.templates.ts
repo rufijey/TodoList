@@ -79,6 +79,7 @@ export const getVerificationEmailTemplate = (
       <p style="font-size: 13px; color: #4F46E5;"><a href="${verificationUrl}">${verificationUrl}</a></p>
       <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
       <p style="font-size: 12px; color: #777;">If you did not create an account, no further action is required.</p>
+      <p style="font-size: 11px; color: #999; margin-top: 10px;">Note: If this email ended up in your Spam or Junk folder, please mark it as "Not Spam" to receive future notifications normally.</p>
     </div>
   `);
 
