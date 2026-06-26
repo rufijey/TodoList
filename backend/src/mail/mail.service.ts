@@ -32,6 +32,19 @@ export class MailService {
       from = 'onboarding@resend.dev';
     }
 
+    this.logger.log(
+      cleanLog(`
+        [EMAIL OUT]
+        ========================================
+        TO: ${to}
+        FROM: ${from}
+        SUBJECT: ${subject}
+        BODY:
+        ${text}
+        ========================================
+      `),
+    );
+
     if (this.resend) {
       try {
         const { data, error } = await this.resend.emails.send({
@@ -50,19 +63,6 @@ export class MailService {
       } catch (error: any) {
         this.logger.error(`Failed to send email via Resend to ${to}:`, error.message);
       }
-    } else {
-      this.logger.log(
-        cleanLog(`
-          [EMAIL OUT]
-          ========================================
-          TO: ${to}
-          FROM: ${from}
-          SUBJECT: ${subject}
-          BODY:
-          ${text}
-          ========================================
-        `),
-      );
     }
   }
 
