@@ -1,33 +1,27 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MailService } from './mail.service';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
-
-jest.mock('nodemailer');
 
 describe('MailService', () => {
   let service: MailService;
   let configService: ConfigService;
 
-  const mockSendMail = jest.fn().mockResolvedValue(undefined);
-  const mockCreateTransport = jest.fn().mockReturnValue({
-    sendMail: mockSendMail,
+  const mockFetch = jest.fn().mockResolvedValue({
+    ok: true,
+    text: async () => '',
   });
 
   const mockConfigService = {
     get: jest.fn().mockImplementation((key: string) => {
-      if (key === 'SMTP_HOST') return 'smtp.example.com';
-      if (key === 'SMTP_PORT') return 587;
-      if (key === 'SMTP_USER') return 'user@example.com';
-      if (key === 'SMTP_PASS') return 'password';
-      if (key === 'SMTP_FROM') return 'noreply@example.com';
+      if (key === 'SENDGRID_API_KEY') return 'SG.test_key';
+      if (key === 'SENDGRID_FROM') return 'sender@example.com';
       if (key === 'FRONTEND_URL') return 'http://localhost';
       return null;
     }),
   };
 
   beforeEach(async () => {
-    (nodemailer.createTransport as jest.Mock).mockImplementation(mockCreateTransport);
+    global.fetch = mockFetch;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -49,7 +43,7 @@ describe('MailService', () => {
   });
 
   describe('sendShareNotification', () => {
-    it('should call sendMail when transporter is initialized', async () => {
+    it('should call fetch to SendGrid API', async () => {
       await service.sendShareNotification(
         'target@example.com',
         'My List',
@@ -58,23 +52,33 @@ describe('MailService', () => {
         'list-slug',
       );
 
-      expect(mockSendMail).toHaveBeenCalled();
-      const mailOptions = mockSendMail.mock.calls[0][0];
-      expect(mailOptions.to).toBe('target@example.com');
-      expect(mailOptions.subject).toContain('shared a To-Do list with you');
-      expect(mailOptions.text).toContain('list-slug');
+      expect(mockFetch).toHaveBeenCalled();
+      const fetchArgs = mockFetch.mock.calls[0];
+      expect(fetchArgs[0]).toBe('https://api.sendgrid.com/v3/mail/send');
+      const fetchOptions = fetchArgs[1];
+      expect(fetchOptions.method).toBe('POST');
+      expect(fetchOptions.headers.Authorization).toBe('Bearer SG.test_key');
+      const body = JSON.parse(fetchOptions.body);
+      expect(body.personalizations[0].to[0].email).toBe('target@example.com');
+      expect(body.subject).toContain('shared a To-Do list with you');
+      expect(body.content[0].value).toContain('list-slug');
     });
   });
 
   describe('sendVerificationEmail', () => {
-    it('should call sendMail for account verification', async () => {
+    it('should call fetch to SendGrid API', async () => {
       await service.sendVerificationEmail('user@example.com', 'token-123');
 
-      expect(mockSendMail).toHaveBeenCalled();
-      const mailOptions = mockSendMail.mock.calls[0][0];
-      expect(mailOptions.to).toBe('user@example.com');
-      expect(mailOptions.subject).toContain('Verify your To-Do List account');
-      expect(mailOptions.text).toContain('token-123');
+      expect(mockFetch).toHaveBeenCalled();
+      const fetchArgs = mockFetch.mock.calls[0];
+      expect(fetchArgs[0]).toBe('https://api.sendgrid.com/v3/mail/send');
+      const fetchOptions = fetchArgs[1];
+      expect(fetchOptions.method).toBe('POST');
+      expect(fetchOptions.headers.Authorization).toBe('Bearer SG.test_key');
+      const body = JSON.parse(fetchOptions.body);
+      expect(body.personalizations[0].to[0].email).toBe('user@example.com');
+      expect(body.subject).toContain('Verify your To-Do List account');
+      expect(body.content[0].value).toContain('token-123');
     });
   });
 });

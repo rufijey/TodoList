@@ -1,7 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
-import * as dns from 'dns';
 import { getShareNotificationTemplate, getVerificationEmailTemplate } from './mail.templates';
 
 const cleanLog = (str: string): string => {
@@ -12,64 +10,28 @@ const cleanLog = (str: string): string => {
     .trim();
 };
 
+const extractEmail = (emailStr: string): string => {
+  const match = emailStr.match(/<([^>]+)>/);
+  return match ? match[1] : emailStr.trim();
+};
+
 @Injectable()
 export class MailService {
-  private transporter: nodemailer.Transporter | null | undefined = undefined;
   private readonly logger = new Logger(MailService.name);
 
   constructor(private config: ConfigService) {}
 
-  private async getTransporter(): Promise<nodemailer.Transporter | null> {
-    if (this.transporter !== undefined) {
-      return this.transporter;
-    }
-
-    const host = this.config.get<string>('SMTP_HOST');
-    const port = this.config.get<number>('SMTP_PORT') || 587;
-    const user = this.config.get<string>('SMTP_USER');
-    const pass = this.config.get<string>('SMTP_PASS');
-
-    if (user && pass) {
-      const options: any = {
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
-      };
-
-      if (host) {
-        try {
-          const { address } = await dns.promises.lookup(host, { family: 4 });
-          options.host = address;
-          options.tls = {
-            servername: host,
-          };
-        } catch (err: any) {
-          this.logger.warn(`Failed to pre-resolve SMTP host ${host}: ${err.message}`);
-        }
-      }
-
-      this.transporter = nodemailer.createTransport(options);
-      this.logger.log('Nodemailer SMTP transporter initialized');
-    } else {
-      this.transporter = null;
-      this.logger.warn(
-        'SMTP credentials not provided. Email service will output emails to console.',
-      );
-    }
-
-    return this.transporter;
-  }
-
   private async sendEmail(to: string, subject: string, text: string, html: string) {
-    const from = this.config.get<string>('SMTP_FROM') || 'noreply@todolist.com';
+    const apiKey = this.config.get<string>('SENDGRID_API_KEY');
+    const rawFrom = this.config.get<string>('SENDGRID_FROM') || this.config.get<string>('SMTP_FROM') || 'tikhonov.alexander.work@gmail.com';
+    const fromEmail = extractEmail(rawFrom);
 
     this.logger.log(
       cleanLog(`
         [EMAIL OUT]
         ========================================
         TO: ${to}
-        FROM: ${from}
+        FROM: ${fromEmail}
         SUBJECT: ${subject}
         BODY:
         ${text}
@@ -77,20 +39,46 @@ export class MailService {
       `),
     );
 
-    const transporter = await this.getTransporter();
-
-    if (transporter) {
+    if (apiKey) {
       try {
-        await transporter.sendMail({
-          from,
-          to,
-          subject,
-          text,
-          html,
+        const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            personalizations: [
+              {
+                to: [{ email: to }],
+              },
+            ],
+            from: {
+              email: fromEmail,
+              name: 'To-Do List Team',
+            },
+            subject: subject,
+            content: [
+              {
+                type: 'text/plain',
+                value: text,
+              },
+              {
+                type: 'text/html',
+                value: html,
+              },
+            ],
+          }),
         });
-        this.logger.log(`Email successfully sent via SMTP to ${to}`);
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`SendGrid API error: ${response.status} ${response.statusText} - ${errText}`);
+        }
+
+        this.logger.log(`Email successfully sent via SendGrid to ${to}`);
       } catch (error: any) {
-        this.logger.error(`Failed to send email via SMTP to ${to}:`, error);
+        this.logger.error(`Failed to send email via SendGrid to ${to}:`, error.message || error);
       }
     }
   }
