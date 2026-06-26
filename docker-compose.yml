@@ -22,6 +22,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      target: builder
     container_name: todolist-backend
     ports:
       - '3000:3000'
@@ -44,6 +45,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: builder
       args:
         VITE_API_URL: "http://localhost:3000"
     container_name: todolist-frontend
