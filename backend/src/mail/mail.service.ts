@@ -27,7 +27,10 @@ export class MailService {
   }
 
   private async sendEmail(to: string, subject: string, text: string, html: string) {
-    const from = this.config.get<string>('RESEND_FROM') || this.config.get<string>('SMTP_FROM') || 'onboarding@resend.dev';
+    let from = this.config.get<string>('RESEND_FROM') || this.config.get<string>('SMTP_FROM') || 'onboarding@resend.dev';
+    if (from.includes('todolist.com')) {
+      from = 'onboarding@resend.dev';
+    }
 
     if (this.resend) {
       try {
